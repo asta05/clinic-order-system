@@ -6,11 +6,12 @@ import streamlit as st
 import pandas as pd
 import io
 import os
+from pathlib import Path
 
 # Merchant & static QR path (change if needed)
 MERCHANT_VPA = "snekhaganesh87@okhdfcbank"
 MERCHANT_NAME = "Snekha Ganesh"
-STATIC_QR_PATH = r"C:\Users\G Astalakshmi\Desktop\project lite and lit\qr_snekha.png.jpg"
+STATIC_QR_PATH = r"qr_snekha.png"
 
 DB_PATH = "clinic_sqlite.db"
 
@@ -355,16 +356,15 @@ with right:
         st.subheader("Payment")
         st.write(f"Customer: *{pending['name']}*  |  Phone: *{pending['phone']}*")
         st.write(f"Amount: *Rs {pending['total']:.2f}*")
-        if pending.get("method", "").startswith("UPI"):
-            qr_bytes, err = generate_upi_qr_png_bytes(MERCHANT_VPA, MERCHANT_NAME, pending['total'], note="ClinicOrder")
-            if qr_bytes:
-                st.image(qr_bytes, caption=f"Scan to pay Rs {pending['total']:.2f} via UPI", use_container_width=True)
-            else:
-                st.error("Could not generate dynamic QR: " + str(err))
-                if os.path.exists(STATIC_QR_PATH):
-                    st.image(STATIC_QR_PATH, caption=f"Static QR (enter amount Rs {pending['total']:.2f} in your app)")
-                else:
-                    st.warning("Static QR not found. Install qrcode: pip install qrcode[pil] pillow")
+       if pending.get("method", "").startswith("UPI"):
+            qr_path = Path(STATIC_QR_PATH)
+            if qr_path.exists():
+                 st.image(str(qr_path), caption=f"Scan to pay Rs {pending['total']:.2f} via UPI")
+                 st.caption("Scan the QR using any UPI app — the amount should be pre-filled.")
+             else:
+                 st.warning("Static QR not found. Please upload 'qr_snekha.png' to your repository.")
+        elif pending.get("method") == "Cash":
+            st.info("Collect cash from the customer and press 'Confirm payment (simulate)'.")
             st.write("Scan the QR using any UPI app — the amount should be pre-filled.")
         else:
             st.info("Collect cash from the customer and press Confirm payment (cash collected).")
@@ -414,3 +414,4 @@ if st.button("Show orders for phone (bottom)"):
                         st.table(df[['name','quantity','price','subtotal']].rename(columns={
                             'name':'Tablet','quantity':'Qty','price':'Price','subtotal':'Subtotal'
                         }))
+
