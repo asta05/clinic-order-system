@@ -349,25 +349,28 @@ with right:
                     else:
                         st.info("No items available to add from that order.")
 
-    # Payment UI / pending payment
+                    # Payment UI / pending payment
     if st.session_state.pending_payment:
         pending = st.session_state.pending_payment
         st.markdown("---")
         st.subheader("Payment")
         st.write(f"Customer: *{pending['name']}*  |  Phone: *{pending['phone']}*")
         st.write(f"Amount: *Rs {pending['total']:.2f}*")
+
+        from pathlib import Path
         if pending.get("method", "").startswith("UPI"):
             qr_path = Path(STATIC_QR_PATH)
             if qr_path.exists():
-                 st.image(str(qr_path), caption=f"Scan to pay Rs {pending['total']:.2f} via UPI")
-                 st.caption("Scan the QR using any UPI app — the amount should be pre-filled.")
-             else:
-                 st.warning("Static QR not found. Please upload 'qr_snekha.png' to your repository.")
-         elif pending.get("method") == "Cash":
+                st.image(str(qr_path), caption=f"Scan to pay Rs {pending['total']:.2f} via UPI")
+                st.caption("Scan the QR using any UPI app — the amount should be pre-filled.")
+            else:
+                st.warning("Static QR not found. Please upload 'qr_snekha.png' to your repository.")
+        elif pending.get("method") == "Cash":
             st.info("Collect cash from the customer and press 'Confirm payment (simulate)'.")
             st.write("Scan the QR using any UPI app — the amount should be pre-filled.")
-         else:
+        else:
             st.info("Collect cash from the customer and press Confirm payment (cash collected).")
+
         if st.button("Confirm payment (simulate)"):
             existing = find_customer_by_phone(pending['phone'])
             if existing:
@@ -376,7 +379,7 @@ with right:
                 cid = create_customer(pending['name'], pending['phone'])
             order_id = create_order(cid, pending['items'])
             st.success(f"Order placed. Order ID: {order_id}")
-            st.session_state.last_order_id = order_id
+
             # clear session data for next customer
             st.session_state.cart = {}
             st.session_state.pending_payment = None
@@ -413,5 +416,6 @@ if st.button("Show orders for phone (bottom)"):
                         st.table(df[['name','quantity','price','subtotal']].rename(columns={
                             'name':'Tablet','quantity':'Qty','price':'Price','subtotal':'Subtotal'
                         }))
+
 
 
