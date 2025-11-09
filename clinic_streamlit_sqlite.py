@@ -452,6 +452,33 @@ if admin_pass == "clinic123":  # You can set your own password here
             st.rerun()
 else:
     st.info("Enter admin password to access restock options.")
+# --- ADMIN: show DB contents (for demo only) ---
+st.markdown("---")
+st.header("Admin — Database (live)")
+
+if st.checkbox("Show database path and basic tables"):
+    st.write("DB file path:", Path(DB_PATH).absolute())
+    try:
+        conn = get_conn()
+        df_c = pd.read_sql_query("SELECT * FROM customers ORDER BY id", conn)
+        df_t = pd.read_sql_query("SELECT * FROM tablets ORDER BY id", conn)
+        df_o = pd.read_sql_query("SELECT * FROM orders ORDER BY id DESC", conn)
+        
+        st.subheader("Customers")
+        st.dataframe(df_c)
+
+        st.subheader("Tablets (stock)")
+        st.dataframe(df_t)
+
+        st.subheader("Orders")
+        st.dataframe(df_o)
+
+        csv = df_o.to_csv(index=False).encode('utf-8')
+        st.download_button("Download orders.csv", data=csv, file_name="orders.csv", mime="text/csv")
+
+    except Exception as e:
+        st.error("Could not read DB: " + str(e))
+
 
 
 
