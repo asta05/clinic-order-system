@@ -429,24 +429,31 @@ if st.button("Show orders for phone (bottom)"):
 st.markdown("---")
 st.header("Admin — Restock Medicines")
 
-# Fetch all tablets from DB
-tablets_list = fetch_tablets()
-tablet_names = [t['name'] for t in tablets_list]
+# Simple password protection for admin
+admin_pass = st.text_input("Enter admin password to access restock panel", type="password")
 
-if not tablet_names:
-    st.warning("No tablets found in database.")
+if admin_pass == "clinic123":  # You can set your own password here
+    tablets_list = fetch_tablets()
+    tablet_names = [t['name'] for t in tablets_list]
+
+    if not tablet_names:
+        st.warning("No tablets found in database.")
+    else:
+        selected_tablet = st.selectbox("Select tablet to restock", tablet_names)
+        restock_qty = st.number_input("Enter quantity to add", min_value=1, step=1)
+        
+        if st.button("Update Stock"):
+            conn = get_conn()
+            cur = conn.cursor()
+            cur.execute("UPDATE tablets SET stock = stock + ? WHERE name = ?", (restock_qty, selected_tablet))
+            conn.commit()
+            conn.close()
+            st.success(f"{restock_qty} units added to '{selected_tablet}'.")
+            st.rerun()
 else:
-    selected_tablet = st.selectbox("Select tablet to restock", tablet_names)
-    restock_qty = st.number_input("Enter quantity to add", min_value=1, step=1)
-    
-    if st.button("Update Stock"):
-        conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("UPDATE tablets SET stock = stock + ? WHERE name = ?", (restock_qty, selected_tablet))
-        conn.commit()
-        conn.close()
-        st.success(f"{restock_qty} units added to '{selected_tablet}'.")
-        st.rerun()
+    st.info("Enter admin password to access restock options.")
+
+
 
 
 
