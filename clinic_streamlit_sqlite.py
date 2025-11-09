@@ -356,19 +356,18 @@ with right:
         st.subheader("Payment")
         st.write(f"Customer: *{pending['name']}*  |  Phone: *{pending['phone']}*")
         st.write(f"Amount: *Rs {pending['total']:.2f}*")
-       if pending.get("method", "").startswith("UPI"):
+        if pending.get("method", "").startswith("UPI"):
             qr_path = Path(STATIC_QR_PATH)
             if qr_path.exists():
                  st.image(str(qr_path), caption=f"Scan to pay Rs {pending['total']:.2f} via UPI")
                  st.caption("Scan the QR using any UPI app — the amount should be pre-filled.")
              else:
                  st.warning("Static QR not found. Please upload 'qr_snekha.png' to your repository.")
-        elif pending.get("method") == "Cash":
+         elif pending.get("method") == "Cash":
             st.info("Collect cash from the customer and press 'Confirm payment (simulate)'.")
             st.write("Scan the QR using any UPI app — the amount should be pre-filled.")
-        else:
+         else:
             st.info("Collect cash from the customer and press Confirm payment (cash collected).")
-
         if st.button("Confirm payment (simulate)"):
             existing = find_customer_by_phone(pending['phone'])
             if existing:
@@ -414,4 +413,5 @@ if st.button("Show orders for phone (bottom)"):
                         st.table(df[['name','quantity','price','subtotal']].rename(columns={
                             'name':'Tablet','quantity':'Qty','price':'Price','subtotal':'Subtotal'
                         }))
+
 
